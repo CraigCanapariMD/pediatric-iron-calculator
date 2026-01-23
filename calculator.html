@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pediatric Iron Dosing Calculator for RLS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1E73BE;
+            --primary-hover: #165B9A;
+            --primary-light: #e8f1f9;
+            --warning-color: #c9553d;
+            --warning-bg: #fdf2f0;
+            --warning-border: #f5d5cf;
+            --info-color: #1E73BE;
+            --info-bg: #f0f6fd;
+            --info-border: #cfdff5;
+            --success-color: #2d8a4e;
+            --success-bg: #f0fdf4;
+            --success-border: #bbf7d0;
+            --text-color: #1a1a1a;
+            --text-muted: #555555;
+            --border-color: #e0e0e0;
+            --bg-color: #ffffff;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --border-radius: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Libre Baskerville', Georgia, serif;
+            font-size: 16px;
+            line-height: 1.7;
+            color: var(--text-color);
+            background: transparent;
+            padding: 20px 0;
+        }
+
+        .calculator-container {
+            max-width: 650px;
+            margin: 0 auto;
+            background: var(--bg-color);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+
+        .calculator-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+            color: white !important;
+            padding: 28px 32px;
+            text-align: center;
+        }
+
+        .calculator-header h1 {
+            font-family: 'Nunito Sans', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            letter-spacing: -0.02em;
+            color: white !important;
+        }
+
+        .calculator-header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-style: italic;
+            color: white !important;
+        }
+
+        .header-wrapper {
+            position: relative;
+        }
+
+        .output-section {
+            margin-top: 16px;
+        }
+
+        .output-section h4 {
+            font-family: 'Nunito Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .calculator-body {
+            padding: 32px;
+        }
+
+        .input-group {
+            margin-bottom: 24px;
+        }
+
+        .input-group label {
+            display: block;
+            font-family: 'Nunito Sans', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+
+        .input-group select,
+        .input-group input[type="number"] {
+            width: 100%;
+            padding: 14px 16px;
+            font-family: 'Libre Baskerville', Georgia, serif;
+            font-size: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background-color: white;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .input-group select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23555' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+        }
+
+        .input-group select:focus,
+        .input-group input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(30, 115, 190, 0.15);
+        }
+
+        .input-group input[type="number"] {
+            cursor: text;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 16px 24px;
+            font-family: 'Nunito Sans', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(30, 115, 190, 0.3);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            margin-top: 28px;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-card {
+            padding: 20px 24px;
+            border-radius: var(--border-radius);
+            margin-bottom: 16px;
+        }
+
+        .result-card.success {
+            background: var(--success-bg);
+            border: 1px solid var(--success-border);
+        }
+
+        .result-card.warning {
+            background: var(--warning-bg);
+            border: 1px solid var(--warning-border);
+        }
+
+        .result-card.info {
+            background: var(--info-bg);
+            border: 1px solid var(--info-border);
+        }
+
+        .result-card h3 {
+            font-family: 'Nunito Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        .result-card.success h3 { color: var(--success-color); }
+        .result-card.warning h3 { color: var(--warning-color); }
+        .result-card.info h3 { color: var(--info-color); }
+
+        .result-card p {
+            font-size: 0.95rem;
+            color: var(--text-color);
+        }
+
+        .result-card .dose {
+            font-family: 'Nunito Sans', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--success-color);
+            display: block;
+            margin: 4px 0;
+        }
+
+        .result-card ul {
+            margin: 8px 0 0 0;
+            padding-left: 20px;
+        }
+
+        .result-card li {
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+            color: var(--text-muted);
+        }
+
+        .output-box {
+            background: #f8f9fa;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 16px;
+            margin-top: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .copy-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 12px;
+            padding: 10px 20px;
+            font-family: 'Nunito Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            background: white;
+            border: 2px solid var(--primary-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .copy-btn.copied {
+            background: var(--success-color);
+            border-color: var(--success-color);
+            color: white;
+        }
+
+        .disclaimer {
+            margin-top: 24px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .disclaimer p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .disclaimer p strong {
+            color: var(--text-color);
+            font-style: normal;
+        }
+
+        .references {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .references h4 {
+            font-family: 'Nunito Sans', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .references ol {
+            padding-left: 20px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .references li {
+            margin-bottom: 8px;
+        }
+
+        .section-label {
+            font-family: 'Nunito Sans', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-top: 16px;
+            margin-bottom: 4px;
+        }
+
+        .section-label:first-child {
+            margin-top: 0;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 20px 12px;
+            }
+
+            .calculator-header {
+                padding: 24px 20px;
+            }
+
+            .calculator-header h1 {
+                font-size: 1.3rem;
+            }
+
+            .calculator-body {
+                padding: 24px 20px;
+            }
+
+            .result-card .dose {
+                font-size: 1.3rem;
+            }
+
+            .output-box {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="header-wrapper">
+            <div class="calculator-header">
+                <h1>Pediatric Iron Dosing Calculator</h1>
+                <p>For RLS and Restless Sleep Disorder</p>
+            </div>
+        </div>
+
+        <div class="calculator-body">
+            <div class="input-group">
+                <label for="ageGroup">Age Group</label>
+                <select id="ageGroup">
+                    <option value="">Select age group...</option>
+                    <option value="under12">Under 12 years</option>
+                    <option value="12plus">12 years and older</option>
+                </select>
+            </div>
+
+            <div class="input-group" id="weightGroup" style="display: none;">
+                <label for="weight">Weight (kg)</label>
+                <input type="number" id="weight" placeholder="Enter weight in kg" min="1" max="200" step="0.1">
+            </div>
+
+            <button class="calculate-btn" id="calcBtn">Calculate Iron Doses</button>
+
+            <div class="results" id="results"></div>
+
+            <div class="references">
+                <h4>References</h4>
+                <ol>
+                    <li>Winkelman JW, et al. Treatment of RLS and PLMD: AASM Clinical Practice Guideline. <em>J Clin Sleep Med</em>. 2024.</li>
+                    <li>UpToDate: Restless legs syndrome and periodic limb movement disorder in children. 2024.</li>
+                    <li>Andrade C. Dosing Patients With Oral Iron Supplements. <em>J Clin Psychiatry</em>. 2025.</li>
+                </ol>
+            </div>
+
+            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color); font-size: 0.75rem; color: var(--text-muted); text-align: center;">
+                <p>Pediatric Iron Dosing Calculator by <a href="https://drcraigcanapari.com" target="_blank" style="color: var(--primary-color);">Craig Canapari, MD</a></p>
+                <p style="margin-top: 4px;">Licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" style="color: var(--primary-color);">CC BY-NC 4.0</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            var ageGroupSelect = document.getElementById('ageGroup');
+            var weightGroup = document.getElementById('weightGroup');
+            var weightInput = document.getElementById('weight');
+            var calcBtn = document.getElementById('calcBtn');
+            var resultsDiv = document.getElementById('results');
+
+            // Preparation data
+            var preparations = {
+                liquids: [
+                    { name: 'NovaFerrum Yummy (raspberry)', mgPerMl: 15, needsVitC: true },
+                    { name: 'NovaFerrum Tasty (chocolate)', mgPerMl: 15, needsVitC: true },
+                    { name: 'Liquid ferrous sulfate', mgPerMl: 12, needsVitC: true }
+                ],
+                chewables: [
+                    { name: 'NovaFerrum Chewable Kids', mgPerTablet: 18, needsVitC: false },
+                    { name: "Nature's Plus Chewable", mgPerTablet: 27, needsVitC: false }
+                ],
+                tablets: [
+                    { name: 'Ferrous sulfate 325mg', mgPerTablet: 65, needsVitC: true }
+                ]
+            };
+
+            // Show/hide weight field based on age selection
+            ageGroupSelect.addEventListener('change', function() {
+                if (this.value === 'under12') {
+                    weightGroup.style.display = 'block';
+                } else {
+                    weightGroup.style.display = 'none';
+                }
+            });
+
+            calcBtn.addEventListener('click', calculateDose);
+
+            function roundLiquid(ml) {
+                return Math.round(ml); // nearest 1 mL
+            }
+
+            function roundTablet(tabs) {
+                return Math.round(tabs * 2) / 2; // nearest 0.5
+            }
+
+            function formatTablets(num) {
+                if (num === 0.5) return '1/2 tablet';
+                if (num === 1) return '1 tablet';
+                if (num === 1.5) return '1-1/2 tablets';
+                if (num % 1 === 0.5) return Math.floor(num) + '-1/2 tablets';
+                return num + ' tablet' + (num !== 1 ? 's' : '');
+            }
+
+            function calculateDose() {
+                var ageGroup = ageGroupSelect.value;
+
+                if (ageGroup === '') {
+                    resultsDiv.innerHTML = '<div class="result-card warning">' +
+                        '<h3>Please Select Age Group</h3>' +
+                        '<p>Choose the patient\'s age group to see dosing recommendations.</p>' +
+                        '</div>';
+                    resultsDiv.classList.add('show');
+                    return;
+                }
+
+                var targetDose;
+                var weightDisplay = '';
+
+                if (ageGroup === 'under12') {
+                    var weight = parseFloat(weightInput.value);
+                    if (!weight || weight <= 0) {
+                        resultsDiv.innerHTML = '<div class="result-card warning">' +
+                            '<h3>Please Enter Weight</h3>' +
+                            '<p>Enter the patient\'s weight in kg to calculate the dose.</p>' +
+                            '</div>';
+                        resultsDiv.classList.add('show');
+                        return;
+                    }
+                    targetDose = Math.min(weight * 3, 130); // 3mg/kg, max 130mg
+                    weightDisplay = ' (based on ' + weight + ' kg)';
+                } else {
+                    targetDose = 65; // Fixed 65mg for ≥12
+                }
+
+                // Calculate doses for each preparation (include elemental iron delivered)
+                var liquidDoses = preparations.liquids.map(function(p) {
+                    var ml = roundLiquid(targetDose / p.mgPerMl);
+                    var actualMg = ml * p.mgPerMl;
+                    return { name: p.name, dose: ml + ' mL (' + actualMg + ' mg)', needsVitC: p.needsVitC };
+                });
+
+                var chewableDoses = preparations.chewables.map(function(p) {
+                    var tabs = roundTablet(targetDose / p.mgPerTablet);
+                    var actualMg = Math.round(tabs * p.mgPerTablet);
+                    return { name: p.name, dose: formatTablets(tabs) + ' (' + actualMg + ' mg)', needsVitC: p.needsVitC };
+                });
+
+                var tabletDoses = preparations.tablets.map(function(p) {
+                    var tabs = roundTablet(targetDose / p.mgPerTablet);
+                    var actualMg = Math.round(tabs * p.mgPerTablet);
+                    return { name: p.name, dose: formatTablets(tabs) + ' (' + actualMg + ' mg)', needsVitC: p.needsVitC };
+                });
+
+                // Build ENGLISH plain text output for EPIC
+                var plainTextEN = 'IRON SUPPLEMENTATION FOR RLS/RESTLESS SLEEP DISORDER\n';
+                plainTextEN += '================================================\n\n';
+                plainTextEN += 'Target dose: ' + Math.round(targetDose) + ' mg elemental iron once daily in AM' + weightDisplay + '\n\n';
+
+                plainTextEN += 'LIQUIDS (for younger children):\n';
+                liquidDoses.forEach(function(d) {
+                    plainTextEN += '• ' + d.name + ': ' + d.dose + ' once daily\n';
+                });
+
+                plainTextEN += '\nCHEWABLES (typically age 5-6+):\n';
+                chewableDoses.forEach(function(d) {
+                    plainTextEN += '• ' + d.name + ': ' + d.dose + ' once daily\n';
+                });
+
+                plainTextEN += '\nTABLETS (older children/adolescents):\n';
+                tabletDoses.forEach(function(d) {
+                    plainTextEN += '• ' + d.name + ': ' + d.dose + ' once daily\n';
+                });
+
+                plainTextEN += '\nADMINISTRATION:\n';
+                plainTextEN += '• Give in the morning on an empty stomach\n';
+                plainTextEN += '• NovaFerrum Chewables and Nature\'s Plus contain Vitamin C (no supplement needed)\n';
+                plainTextEN += '• All other preparations: take with orange juice OR 50-100mg Vitamin C\n';
+                plainTextEN += '• Avoid dairy products within 1-2 hours of iron dose\n';
+
+                plainTextEN += '\nSIDE EFFECTS & COUNSELING:\n';
+                plainTextEN += '• May cause constipation - start Miralax 1 capful daily in 8 oz water if needed\n';
+                plainTextEN += '• May turn stool black (this is normal)\n';
+                plainTextEN += '• Liquid iron may stain teeth/gums - use syringe to back of mouth, rinse after\n';
+                plainTextEN += '• If stomach upset occurs, may switch to every-other-day dosing\n';
+                plainTextEN += '• IMPORTANT: Keep iron supplements in a safe place out of reach of children - iron overdoses can be life-threatening\n';
+
+                // Build SPANISH plain text output for EPIC
+                var weightDisplayES = weightDisplay ? ' (basado en ' + weightInput.value + ' kg)' : '';
+                var plainTextES = 'SUPLEMENTACIÓN DE HIERRO PARA SPI/TRASTORNO DE SUEÑO INQUIETO\n';
+                plainTextES += '=============================================================\n\n';
+                plainTextES += 'Dosis objetivo: ' + Math.round(targetDose) + ' mg de hierro elemental una vez al día por la mañana' + weightDisplayES + '\n\n';
+
+                plainTextES += 'LÍQUIDOS (para niños pequeños):\n';
+                liquidDoses.forEach(function(d) {
+                    plainTextES += '• ' + d.name + ': ' + d.dose + ' una vez al día\n';
+                });
+
+                plainTextES += '\nMASticables (típicamente edad 5-6+):\n';
+                chewableDoses.forEach(function(d) {
+                    plainTextES += '• ' + d.name + ': ' + d.dose + ' una vez al día\n';
+                });
+
+                plainTextES += '\nTABLETAS (niños mayores/adolescentes):\n';
+                tabletDoses.forEach(function(d) {
+                    plainTextES += '• ' + d.name + ': ' + d.dose + ' una vez al día\n';
+                });
+
+                plainTextES += '\nADMINISTRACIÓN:\n';
+                plainTextES += '• Dar por la mañana con el estómago vacío\n';
+                plainTextES += '• NovaFerrum Masticables y Nature\'s Plus contienen Vitamina C (no se necesita suplemento adicional)\n';
+                plainTextES += '• Todas las demás preparaciones: tomar con jugo de naranja O 50-100mg de Vitamina C\n';
+                plainTextES += '• Evitar productos lácteos dentro de 1-2 horas de la dosis de hierro\n';
+
+                plainTextES += '\nEFECTOS SECUNDARIOS Y CONSEJOS:\n';
+                plainTextES += '• Puede causar estreñimiento - comenzar Miralax 1 tapa llena diaria en 8 oz de agua si es necesario\n';
+                plainTextES += '• Puede volver las heces negras (esto es normal)\n';
+                plainTextES += '• El hierro líquido puede manchar los dientes/encías - usar jeringa hacia atrás de la boca, enjuagar después\n';
+                plainTextES += '• Si hay malestar estomacal, puede cambiar a dosis cada dos días\n';
+                plainTextES += '• IMPORTANTE: Guarde los suplementos de hierro en un lugar seguro fuera del alcance de los niños - las sobredosis de hierro pueden ser mortales\n';
+
+                // Build HTML display
+                var html = '<div class="result-card success">' +
+                    '<h3>Target Dose' + weightDisplay + '</h3>' +
+                    '<span class="dose">' + Math.round(targetDose) + ' mg elemental iron</span>' +
+                    '<p>Once daily in the morning</p>' +
+                    '</div>';
+
+                html += '<div class="result-card info">' +
+                    '<h3>Preparation Options</h3>' +
+                    '<p class="section-label">Liquids (younger children)</p>' +
+                    '<ul>';
+                liquidDoses.forEach(function(d) {
+                    html += '<li><strong>' + d.name + ':</strong> ' + d.dose + '</li>';
+                });
+                html += '</ul>' +
+                    '<p class="section-label">Chewables (typically age 5-6+)</p>' +
+                    '<ul>';
+                chewableDoses.forEach(function(d) {
+                    var vitC = d.needsVitC ? '' : ' <em>(contains Vitamin C)</em>';
+                    html += '<li><strong>' + d.name + ':</strong> ' + d.dose + vitC + '</li>';
+                });
+                html += '</ul>' +
+                    '<p class="section-label">Tablets (older children/adolescents)</p>' +
+                    '<ul>';
+                tabletDoses.forEach(function(d) {
+                    html += '<li><strong>' + d.name + ':</strong> ' + d.dose + '</li>';
+                });
+                html += '</ul></div>';
+
+                // English output section
+                html += '<div class="result-card info">' +
+                    '<div class="output-section">' +
+                    '<h4>English Version</h4>' +
+                    '<div class="output-box" id="outputTextEN">' + plainTextEN + '</div>' +
+                    '<button class="copy-btn" id="copyBtnEN">' +
+                    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>' +
+                    'Copy English</button>' +
+                    '</div>' +
+                    '</div>';
+
+                // Spanish output section
+                html += '<div class="result-card info">' +
+                    '<div class="output-section">' +
+                    '<h4>Spanish Version / Versión en Español</h4>' +
+                    '<div class="output-box" id="outputTextES">' + plainTextES + '</div>' +
+                    '<button class="copy-btn" id="copyBtnES">' +
+                    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>' +
+                    'Copy Spanish / Copiar</button>' +
+                    '</div>' +
+                    '</div>';
+
+                resultsDiv.innerHTML = html;
+                resultsDiv.classList.add('show');
+
+                // Add copy functionality for English
+                var copyBtnEN = document.getElementById('copyBtnEN');
+                copyBtnEN.addEventListener('click', function() {
+                    navigator.clipboard.writeText(plainTextEN).then(function() {
+                        copyBtnEN.classList.add('copied');
+                        copyBtnEN.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!';
+                        setTimeout(function() {
+                            copyBtnEN.classList.remove('copied');
+                            copyBtnEN.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy English';
+                        }, 2000);
+                    });
+                });
+
+                // Add copy functionality for Spanish
+                var copyBtnES = document.getElementById('copyBtnES');
+                copyBtnES.addEventListener('click', function() {
+                    navigator.clipboard.writeText(plainTextES).then(function() {
+                        copyBtnES.classList.add('copied');
+                        copyBtnES.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Copiado!';
+                        setTimeout(function() {
+                            copyBtnES.classList.remove('copied');
+                            copyBtnES.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy Spanish / Copiar';
+                        }, 2000);
+                    });
+                });
+
+                resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            // Allow Enter key to trigger calculation
+            weightInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    calculateDose();
+                }
+            });
+
+            ageGroupSelect.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    calculateDose();
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
