@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pediatric Iron Dosing Calculator for RLS</title>
+    <title>Pediatric Iron Dosing Calculator for Restless Leg Syndrome and Restless Sleep Disorder</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&display=swap" rel="stylesheet">
@@ -375,7 +375,7 @@
     <div class="calculator-container">
         <div class="header-wrapper">
             <div class="calculator-header">
-                <h1>Pediatric Iron Dosing Calculator</h1>
+                <h1>Pediatric Iron Dosing Calculator for Restless Leg Syndrome and Restless Sleep Disorder</h1>
                 <p>For Healthcare Providers</p>
             </div>
         </div>
@@ -414,8 +414,7 @@
 
             <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color); font-size: 0.75rem; color: var(--text-muted); text-align: center;">
                 <p>Pediatric Iron Dosing Calculator by <a href="https://drcraigcanapari.com" target="_blank" style="color: var(--primary-color);">Craig Canapari, MD</a></p>
-                <p style="margin-top: 4px;">Licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" style="color: var(--primary-color);">CC BY-NC 4.0</a></p>
-                <p style="margin-top: 8px;" id="usageCounter">Calculations performed: <span id="counterValue">...</span></p>
+                <p style="margin-top: 4px;">Licensed under <a href="https://opensource.org/licenses/MIT" target="_blank" style="color: var(--primary-color);">MIT License</a></p>
             </div>
         </div>
     </div>
@@ -496,29 +495,35 @@
                         resultsDiv.classList.add('show');
                         return;
                     }
-                    targetDose = Math.min(weight * 3, 130); // 3mg/kg, max 130mg
+                    targetDose = Math.min(weight * 3, 65); // 3mg/kg, max 65mg
                     weightDisplay = ' (based on ' + weight + ' kg)';
                 } else {
                     targetDose = 65; // Fixed 65mg for ≥12
                 }
 
+                // Get weight for mg/kg calculations (use entered weight or estimate for 12+)
+                var weightForCalc = (ageGroup === 'under12') ? parseFloat(weightInput.value) : null;
+
                 // Calculate doses for each preparation (include elemental iron delivered)
                 var liquidDoses = preparations.liquids.map(function(p) {
                     var ml = roundLiquid(targetDose / p.mgPerMl);
                     var actualMg = ml * p.mgPerMl;
-                    return { name: p.name, dose: ml + ' mL (' + actualMg + ' mg)', needsVitC: p.needsVitC };
+                    var mgPerKg = weightForCalc ? (actualMg / weightForCalc).toFixed(1) : null;
+                    return { name: p.name, dose: ml + ' mL (' + actualMg + ' mg elemental iron)', actualMg: actualMg, mgPerKg: mgPerKg, needsVitC: p.needsVitC };
                 });
 
                 var chewableDoses = preparations.chewables.map(function(p) {
                     var tabs = roundTablet(targetDose / p.mgPerTablet);
                     var actualMg = Math.round(tabs * p.mgPerTablet);
-                    return { name: p.name, dose: formatTablets(tabs) + ' (' + actualMg + ' mg)', needsVitC: p.needsVitC };
+                    var mgPerKg = weightForCalc ? (actualMg / weightForCalc).toFixed(1) : null;
+                    return { name: p.name, dose: formatTablets(tabs) + ' (' + actualMg + ' mg elemental iron)', actualMg: actualMg, mgPerKg: mgPerKg, needsVitC: p.needsVitC };
                 });
 
                 var tabletDoses = preparations.tablets.map(function(p) {
                     var tabs = roundTablet(targetDose / p.mgPerTablet);
                     var actualMg = Math.round(tabs * p.mgPerTablet);
-                    return { name: p.name, dose: formatTablets(tabs) + ' (' + actualMg + ' mg)', needsVitC: p.needsVitC };
+                    var mgPerKg = weightForCalc ? (actualMg / weightForCalc).toFixed(1) : null;
+                    return { name: p.name, dose: formatTablets(tabs) + ' (' + actualMg + ' mg elemental iron)', actualMg: actualMg, mgPerKg: mgPerKg, needsVitC: p.needsVitC };
                 });
 
                 // Build ENGLISH plain text output for EPIC
@@ -593,6 +598,9 @@
                     '<h3>Target Dose' + weightDisplay + '</h3>' +
                     '<span class="dose">' + Math.round(targetDose) + ' mg elemental iron</span>' +
                     '<p>Once daily in the morning</p>' +
+                    '<p style="margin-top: 12px; font-size: 0.85rem; color: var(--text-muted);">' +
+                    'Calculated at 3 mg/kg/day with a maximum of 65 mg elemental iron daily. ' +
+                    'The doses below represent the closest practical increment for each preparation.</p>' +
                     '</div>';
 
                 html += '<div class="result-card info">' +
@@ -600,20 +608,23 @@
                     '<p class="section-label">Liquids (younger children)</p>' +
                     '<ul>';
                 liquidDoses.forEach(function(d) {
-                    html += '<li><strong>' + d.name + ':</strong> ' + d.dose + '</li>';
+                    var mgKgDisplay = d.mgPerKg ? ' <em style="color: var(--text-muted);">(' + d.mgPerKg + ' mg/kg/day)</em>' : '';
+                    html += '<li><strong>' + d.name + ':</strong> ' + d.dose + mgKgDisplay + '</li>';
                 });
                 html += '</ul>' +
                     '<p class="section-label">Chewables (typically age 5-6+)</p>' +
                     '<ul>';
                 chewableDoses.forEach(function(d) {
                     var vitC = d.needsVitC ? '' : ' <em>(contains Vitamin C)</em>';
-                    html += '<li><strong>' + d.name + ':</strong> ' + d.dose + vitC + '</li>';
+                    var mgKgDisplay = d.mgPerKg ? ' <em style="color: var(--text-muted);">(' + d.mgPerKg + ' mg/kg/day)</em>' : '';
+                    html += '<li><strong>' + d.name + ':</strong> ' + d.dose + vitC + mgKgDisplay + '</li>';
                 });
                 html += '</ul>' +
                     '<p class="section-label">Tablets (older children/adolescents)</p>' +
                     '<ul>';
                 tabletDoses.forEach(function(d) {
-                    html += '<li><strong>' + d.name + ':</strong> ' + d.dose + '</li>';
+                    var mgKgDisplay = d.mgPerKg ? ' <em style="color: var(--text-muted);">(' + d.mgPerKg + ' mg/kg/day)</em>' : '';
+                    html += '<li><strong>' + d.name + ':</strong> ' + d.dose + mgKgDisplay + '</li>';
                 });
                 html += '</ul></div>';
 
@@ -684,42 +695,11 @@
                 }
             });
 
-            // CountAPI integration for usage tracking
-            var counterValue = document.getElementById('counterValue');
-            var counterNamespace = 'craigcanaparimd';
-            var counterKey = 'iron-calculator';
-
-            // Fetch current count on page load
-            fetch('https://api.countapi.xyz/get/' + counterNamespace + '/' + counterKey)
-                .then(function(response) { return response.json(); })
-                .then(function(data) {
-                    if (data.value !== null) {
-                        counterValue.textContent = data.value.toLocaleString();
-                    } else {
-                        // Initialize counter if it doesn't exist
-                        fetch('https://api.countapi.xyz/create?namespace=' + counterNamespace + '&key=' + counterKey + '&value=0')
-                            .then(function() { counterValue.textContent = '0'; });
-                    }
-                })
-                .catch(function() { counterValue.textContent = '—'; });
-
-            // Increment counter when Calculate is clicked (wrap existing handler)
-            var originalCalculate = calculateDose;
-            calculateDose = function() {
-                originalCalculate();
-                // Only increment if calculation was successful (results are shown)
-                if (resultsDiv.classList.contains('show')) {
-                    fetch('https://api.countapi.xyz/hit/' + counterNamespace + '/' + counterKey)
-                        .then(function(response) { return response.json(); })
-                        .then(function(data) {
-                            if (data.value) {
-                                counterValue.textContent = data.value.toLocaleString();
-                            }
-                        })
-                        .catch(function() {});
-                }
-            };
         })();
     </script>
+
+    <!-- Goatcounter analytics (privacy-friendly, no cookies) -->
+    <script data-goatcounter="https://canapari.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
