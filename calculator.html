@@ -376,11 +376,15 @@
         <div class="header-wrapper">
             <div class="calculator-header">
                 <h1>Pediatric Iron Dosing Calculator</h1>
-                <p>For RLS and Restless Sleep Disorder</p>
+                <p>For Healthcare Providers</p>
             </div>
         </div>
 
         <div class="calculator-body">
+            <div class="result-card warning" style="margin-bottom: 24px;">
+                <h3>For Healthcare Providers Only</h3>
+                <p>This calculator is intended for use by healthcare providers. Iron supplementation in children should only be initiated under the guidance and supervision of a physician. Iron overdose can be life-threatening in children.</p>
+            </div>
             <div class="input-group">
                 <label for="ageGroup">Age Group</label>
                 <select id="ageGroup">
@@ -411,6 +415,7 @@
             <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color); font-size: 0.75rem; color: var(--text-muted); text-align: center;">
                 <p>Pediatric Iron Dosing Calculator by <a href="https://drcraigcanapari.com" target="_blank" style="color: var(--primary-color);">Craig Canapari, MD</a></p>
                 <p style="margin-top: 4px;">Licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" style="color: var(--primary-color);">CC BY-NC 4.0</a></p>
+                <p style="margin-top: 8px;" id="usageCounter">Calculations performed: <span id="counterValue">...</span></p>
             </div>
         </div>
     </div>
@@ -678,6 +683,42 @@
                     calculateDose();
                 }
             });
+
+            // CountAPI integration for usage tracking
+            var counterValue = document.getElementById('counterValue');
+            var counterNamespace = 'craigcanaparimd';
+            var counterKey = 'iron-calculator';
+
+            // Fetch current count on page load
+            fetch('https://api.countapi.xyz/get/' + counterNamespace + '/' + counterKey)
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    if (data.value !== null) {
+                        counterValue.textContent = data.value.toLocaleString();
+                    } else {
+                        // Initialize counter if it doesn't exist
+                        fetch('https://api.countapi.xyz/create?namespace=' + counterNamespace + '&key=' + counterKey + '&value=0')
+                            .then(function() { counterValue.textContent = '0'; });
+                    }
+                })
+                .catch(function() { counterValue.textContent = '—'; });
+
+            // Increment counter when Calculate is clicked (wrap existing handler)
+            var originalCalculate = calculateDose;
+            calculateDose = function() {
+                originalCalculate();
+                // Only increment if calculation was successful (results are shown)
+                if (resultsDiv.classList.contains('show')) {
+                    fetch('https://api.countapi.xyz/hit/' + counterNamespace + '/' + counterKey)
+                        .then(function(response) { return response.json(); })
+                        .then(function(data) {
+                            if (data.value) {
+                                counterValue.textContent = data.value.toLocaleString();
+                            }
+                        })
+                        .catch(function() {});
+                }
+            };
         })();
     </script>
 </body>
