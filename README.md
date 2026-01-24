@@ -10,7 +10,7 @@ This tool helps healthcare providers quickly calculate iron dosing for pediatric
 
 ## Features
 
-- **Weight-based dosing** for children under 12 years (3 mg/kg/day, max 130 mg)
+- **Weight-based dosing** for children under 12 years (3 mg/kg/day, max 65 mg)
 - **Fixed dosing** for adolescents 12+ years (65 mg)
 - **Multiple preparation options**: liquids, chewables, and tablets
 - **Dual language output**: English and Spanish versions with separate copy buttons
@@ -65,7 +65,7 @@ Created by [Craig Canapari, MD](https://drcraigcanapari.com) - Pediatric Sleep M
 
 ## License
 
-This work is licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) - free for non-commercial use with attribution.
+This project is licensed under the [MIT License](https://opensource.org/licenses/MIT) - free for any use with attribution.
 
 ## Related Projects
 
