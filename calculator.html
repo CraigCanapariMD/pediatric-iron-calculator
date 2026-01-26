@@ -415,6 +415,7 @@
             <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color); font-size: 0.75rem; color: var(--text-muted); text-align: center;">
                 <p>Pediatric Iron Dosing Calculator by <a href="https://drcraigcanapari.com" target="_blank" style="color: var(--primary-color);">Craig Canapari, MD</a></p>
                 <p style="margin-top: 4px;">Licensed under <a href="https://opensource.org/licenses/MIT" target="_blank" style="color: var(--primary-color);">MIT License</a></p>
+                <p style="margin-top: 8px;">Calculations performed: <span id="useCounter">...</span></p>
             </div>
         </div>
     </div>
@@ -680,7 +681,38 @@
                 });
 
                 resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+                // Increment Firebase counter for successful calculation
+                incrementCounter();
             }
+
+            // Firebase counter function
+            var firebaseUrl = 'https://iron-calculator-counter-default-rtdb.firebaseio.com/calculations.json';
+            var useCounterEl = document.getElementById('useCounter');
+
+            function incrementCounter() {
+                fetch(firebaseUrl)
+                    .then(function(r) { return r.json(); })
+                    .then(function(count) {
+                        var newCount = (count || 0) + 1;
+                        return fetch(firebaseUrl, {
+                            method: 'PUT',
+                            body: JSON.stringify(newCount)
+                        }).then(function() { return newCount; });
+                    })
+                    .then(function(newCount) {
+                        useCounterEl.textContent = newCount.toLocaleString();
+                    })
+                    .catch(function(err) { console.log('Counter error:', err); });
+            }
+
+            // Load counter on page load
+            fetch(firebaseUrl)
+                .then(function(r) { return r.json(); })
+                .then(function(count) {
+                    useCounterEl.textContent = (count || 0).toLocaleString();
+                })
+                .catch(function() { useCounterEl.textContent = '—'; });
 
             // Allow Enter key to trigger calculation
             weightInput.addEventListener('keypress', function(e) {
