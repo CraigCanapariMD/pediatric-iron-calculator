@@ -63,6 +63,11 @@ This tool helps healthcare providers quickly calculate iron dosing for pediatric
 
 Created by [Craig Canapari, MD](https://drcraigcanapari.com) - Pediatric Sleep Medicine, Yale School of Medicine
 
+## Roadmap / Future Considerations
+
+- [ ] **Variable dosing option**: Consider allowing selection of higher iron doses (recommended range is 3-6 mg/kg/day; currently fixed at 3 mg/kg/day)
+- [ ] **Higher max dose**: Evaluate whether max dose should exceed 65 mg elemental iron for larger children/adolescents
+
 ## License
 
 This project is licensed under the [MIT License](https://opensource.org/licenses/MIT) - free for any use with attribution.

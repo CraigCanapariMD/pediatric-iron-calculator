@@ -41,5 +41,9 @@ Matches the melatonin calculator design:
 - Success: #2d8a4e
 - Warning: #c9553d
 
+## Roadmap / Future Considerations
+- **Variable dosing option**: Currently fixed at 3 mg/kg/day, but recommended range is 3-6 mg/kg/day. Consider adding a dropdown or toggle for higher dosing.
+- **Higher max dose**: Currently capped at 65 mg elemental iron. May need to allow higher max for larger children/adolescents.
+
 ## Related Project
 - Pediatric Melatonin Calculator: https://github.com/CraigCanapariMD/pediatric-melatonin-calculator
