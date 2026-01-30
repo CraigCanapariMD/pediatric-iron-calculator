@@ -2,7 +2,7 @@
 
 A web-based calculator for pediatric iron supplementation in children with Restless Legs Syndrome (RLS) and Restless Sleep Disorder.
 
-**Live Calculator:** [https://craigcanaparimd.github.io/pediatric-iron-calculator/calculator.html](live calculator)
+(**Live Calculator:**)[https://craigcanaparimd.github.io/pediatric-iron-calculator/calculator.html]
 
 ## Overview
 
